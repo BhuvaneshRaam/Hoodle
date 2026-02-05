@@ -1,0 +1,48 @@
+package com.example.hoodle.controller;
+
+import com.example.hoodle.Constants.ErrorCode;
+import com.example.hoodle.Constants.ErrorMessage;
+import com.example.hoodle.Entity.UserLogin;
+import com.example.hoodle.Exception.CustomException;
+import com.example.hoodle.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("api/v1/auth")
+public class AuthController {
+
+    @Autowired
+    UserService userService;
+    @PostMapping("/register")
+    public ResponseEntity<?> userRegisration(@RequestBody UserLogin userLogin) throws CustomException{
+             userService.saveUser(userLogin);
+             return ResponseEntity.ok("User created successfully");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> userLogin(@RequestBody UserLogin userLogin) {
+        try {
+            if(userLogin.getUserName() == null || userLogin.getPassword() == null) {
+                throw new CustomException(ErrorCode.Internal_Server_Error, "User credentials not valid");
+            }
+            String token = userService.loginUser(userLogin);
+            return ResponseEntity.ok(Map.of("token",token,"message","Login Successful !"));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw new CustomException(ErrorCode.User_Login_Error, ErrorMessage.User_Login_Error);
+        }
+    }
+
+    @GetMapping("/users")
+    public List<UserLogin> getAllUsers(){
+        return userService.getAllUsers();
+    }
+
+}
