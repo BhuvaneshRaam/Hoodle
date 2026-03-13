@@ -22,7 +22,7 @@ public class JwtGenerator {
     @Value("${app.jwt.token.message}")
     private String message;
 
-    @Value("${jwt.issuer")
+    @Value("${jwt.issuer}")
     private String issuer;
 
     @Value("${jwt.expiration.ms}")

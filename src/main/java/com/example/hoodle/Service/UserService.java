@@ -38,24 +38,21 @@ public class UserService {
     }
 
     public String loginUser(UserLogin userLogin) {
-        try {
+            if(userLogin.getUserName() == null || userLogin.getPassword() == null) {
+                throw new CustomException(ErrorCode.Internal_Server_Error, "User credentials not valid");
+            }
             UserLogin user = userRepo.findByUserName(userLogin.getUserName())
                     .orElseThrow(() -> new CustomException(ErrorCode.User_Not_found,"Invalid Username!"));
             if(!passwordEncoder.matches(userLogin.getPassword(), user.getPassword())) {
                 throw new CustomException(ErrorCode.Invalid_Credentials,"Invalid password!");
             }
             return jwtGenerator.generateJwtToken(user,"User");
-        }
-        catch(Exception e) {
-            throw new CustomException(ErrorCode.User_Login_Error, "Unexpected error occurred while login !");
-        }
     }
 
     public List<UserLogin> getAllUsers() {
         List<UserLogin> users = new ArrayList<>();
         try {
           users = userRepo.findAll();
-
         }
         catch (Exception e) {
             throw new CustomException("9006","Unexcpected eror occured while fetching users");
