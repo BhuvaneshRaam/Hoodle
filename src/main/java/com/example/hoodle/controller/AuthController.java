@@ -33,4 +33,9 @@ public class AuthController {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/users/login")
+    public List<UserLogin> getAllUserLogin(){
+        return userService.getAllUsers();
+    }
+
 }
