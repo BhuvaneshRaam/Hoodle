@@ -1,6 +1,7 @@
 package com.example.hoodle.Service;
 
 import com.example.hoodle.Entity.UserLogin;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -22,7 +24,7 @@ public class JwtGenerator {
     @Value("${app.jwt.token.message}")
     private String message;
 
-    @Value("${jwt.issuer")
+    @Value("${jwt.issuer}")
     private String issuer;
 
     @Value("${jwt.expiration.ms}")
@@ -40,12 +42,32 @@ public class JwtGenerator {
         return response;
     }
 
-    public String generateJwtToken(UserLogin userLogin, String role) {
-        return  Jwts.builder().subject(userLogin.getUserName())
-                .claim("role",role)
+    public String generateJwtToken(UserLogin userLogin, List<String> roles) {
+        return  Jwts.builder().subject(userLogin.getEmailId())
+                .claim("userId", userLogin.getId())
+                .claim("tenantId", userLogin.getTenant().getId())
+                .claim("roles", roles)
                 .issuer(issuer)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+ expirationMs))
                 .signWith(getSigningKey()).compact();
+    }
+
+    public String extractEmail(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false; // Token is expired or tampered with
+        }
     }
 }

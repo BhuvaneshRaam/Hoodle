@@ -1,14 +1,15 @@
 package com.example.hoodle.controller;
 
-import com.example.hoodle.Constants.ErrorCode;
-import com.example.hoodle.Constants.ErrorMessage;
+import com.example.hoodle.DTO.InitResponse;
+import com.example.hoodle.DTO.LoginRequest;
+import com.example.hoodle.DTO.TenantRegistrationRequest;
 import com.example.hoodle.Entity.UserLogin;
 import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -19,24 +20,37 @@ public class AuthController {
 
     @Autowired
     UserService userService;
-    @PostMapping("/register")
-    public ResponseEntity<?> userRegisration(@RequestBody UserLogin userLogin) throws CustomException{
-             userService.saveUser(userLogin);
-             return ResponseEntity.ok("User created successfully");
+    @PostMapping("/signup")
+    public ResponseEntity<?> userRegisration(@RequestBody TenantRegistrationRequest request) throws CustomException{
+        try {
+            userService.registerTenantAndAdmin(request);
+            return ResponseEntity.ok(Map.of("message", "Tenant and Admin User created successfully"));
+        } catch (CustomException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> userLogin(@RequestBody UserLogin userLogin) {
+    @PostMapping("/sign-in")
+    public ResponseEntity<?> userLogin(@RequestBody LoginRequest request) {
         try {
-            if(userLogin.getUserName() == null || userLogin.getPassword() == null) {
-                throw new CustomException(ErrorCode.Internal_Server_Error, "User credentials not valid");
-            }
-            String token = userService.loginUser(userLogin);
-            return ResponseEntity.ok(Map.of("token",token,"message","Login Successful !"));
+            String token = userService.loginUser(request);
+            return ResponseEntity.ok(java.util.Map.of("token", token, "message", "Login Successful!"));
+        } catch (CustomException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            throw new CustomException(ErrorCode.User_Login_Error, ErrorMessage.User_Login_Error);
+    }
+
+    @GetMapping("/init")
+    public ResponseEntity<?> getAppInitData(Authentication authentication) {
+        try {
+            // Because of your JwtAuthFilter, authentication.getName() perfectly returns the user's email!
+            String email = authentication.getName();
+
+            InitResponse initData = userService.getInitData(email);
+
+            return ResponseEntity.ok(initData);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -44,5 +58,12 @@ public class AuthController {
     public List<UserLogin> getAllUsers(){
         return userService.getAllUsers();
     }
+
+    @GetMapping("/users/login")
+    public List<UserLogin> getAllUserLogin(){
+        return userService.getAllUsers();
+    }
+
+
 
 }
