@@ -7,7 +7,7 @@ import com.example.hoodle.DTO.TenantRegistrationRequest;
 import com.example.hoodle.Entity.Permission;
 import com.example.hoodle.Entity.Role;
 import com.example.hoodle.Entity.Tenant;
-import com.example.hoodle.Entity.UserLogin;
+import com.example.hoodle.Entity.User;
 import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Repository.RoleRepo;
 import com.example.hoodle.Repository.TenantRepo;
@@ -55,7 +55,7 @@ public class UserService {
             Set<Role> userRoles = new HashSet<>();
             userRoles.add(tenantAdmin);
 
-            UserLogin adminUser = new UserLogin();
+            User adminUser = new User();
             adminUser.setEmailId(request.getEmailId());
             adminUser.setUserName(request.getUserName());
             adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -68,7 +68,7 @@ public class UserService {
             if(request.getEmailId() == null || request.getPassword() == null) {
                 throw new CustomException(ErrorCode.Internal_Server_Error, "User credentials not valid");
             }
-            UserLogin user = userRepo.findByEmailId(request.getEmailId())
+            User user = userRepo.findByEmailId(request.getEmailId())
                     .orElseThrow(() -> new CustomException(ErrorCode.User_Not_found,"Invalid User !"));
             if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 throw new CustomException(ErrorCode.Invalid_Credentials,"Invalid password!");
@@ -80,8 +80,8 @@ public class UserService {
             return jwtGenerator.generateJwtToken(user, roleNames);
     }
 
-    public InitResponse getInitData(String email) {
-        UserLogin user = userRepo.findByEmailId(email).orElseThrow(() -> new CustomException("404","User not found!" ));
+    public InitResponse getInitData(UUID userId) {
+        User user = userRepo.findById(userId).orElseThrow(() -> new CustomException("404","User not found!" ));
 
         Map<String, Set<String>> accessMap = new HashMap<>();
         List<String> roleNames = new java.util.ArrayList<>();
@@ -101,8 +101,8 @@ public class UserService {
         return new InitResponse(user.getEmailId(), user.getUserName(), user.getTenant().getName(),roleNames, accessMap);
     }
 
-    public List<UserLogin> getAllUsers() {
-        List<UserLogin> users = new ArrayList<>();
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
         try {
           users = userRepo.findAll();
         }

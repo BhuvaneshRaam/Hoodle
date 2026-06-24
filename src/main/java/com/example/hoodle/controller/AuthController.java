@@ -3,7 +3,7 @@ package com.example.hoodle.controller;
 import com.example.hoodle.DTO.InitResponse;
 import com.example.hoodle.DTO.LoginRequest;
 import com.example.hoodle.DTO.TenantRegistrationRequest;
-import com.example.hoodle.Entity.UserLogin;
+import com.example.hoodle.Entity.User;
 import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -44,9 +45,9 @@ public class AuthController {
     public ResponseEntity<?> getAppInitData(Authentication authentication) {
         try {
             // Because of your JwtAuthFilter, authentication.getName() perfectly returns the user's email!
-            String email = authentication.getName();
+            UUID userId = UUID.fromString(authentication.getName());
 
-            InitResponse initData = userService.getInitData(email);
+            InitResponse initData = userService.getInitData(userId);
 
             return ResponseEntity.ok(initData);
         } catch (Exception e) {
@@ -55,12 +56,12 @@ public class AuthController {
     }
 
     @GetMapping("/users")
-    public List<UserLogin> getAllUsers(){
+    public List<User> getAllUsers(){
         return userService.getAllUsers();
     }
 
     @GetMapping("/users/login")
-    public List<UserLogin> getAllUserLogin(){
+    public List<User> getAllUserLogin(){
         return userService.getAllUsers();
     }
 
