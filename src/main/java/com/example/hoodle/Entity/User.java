@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,7 +18,9 @@ import java.util.UUID;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @JdbcTypeCode(Types.VARCHAR)
+    @Column(name="user_uuid")
+    private UUID userUuid;
 
     @Column(name="email_id",unique = true, nullable = false)
     private String emailId;
@@ -28,12 +32,12 @@ public class User {
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="tenant_id", nullable = false)
+    @JoinColumn(name="tenant_uuid", nullable = false)
     private Tenant tenant;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="user_roles",
-            joinColumns = @JoinColumn(name="user_id"),
+            joinColumns = @JoinColumn(name="user_uuid"),
             inverseJoinColumns = @JoinColumn(name="role_id")
 
     )

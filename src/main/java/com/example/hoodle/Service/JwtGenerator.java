@@ -43,9 +43,9 @@ public class JwtGenerator {
     }
 
     public String generateJwtToken(User user, List<String> roles) {
-        return  Jwts.builder().subject(user.getId().toString())
+        return  Jwts.builder().subject(user.getUserUuid().toString())
                 .claim("userEmail", user.getEmailId())
-                .claim("tenantId", user.getTenant().getId())
+                .claim("tenantUuid", user.getTenant().getTenantUuid())
                 .claim("roles", roles)
                 .issuer(issuer)
                 .issuedAt(new Date())

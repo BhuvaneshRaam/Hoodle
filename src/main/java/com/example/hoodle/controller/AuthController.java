@@ -23,12 +23,8 @@ public class AuthController {
     UserService userService;
     @PostMapping("/signup")
     public ResponseEntity<?> userRegisration(@RequestBody TenantRegistrationRequest request) throws CustomException{
-        try {
-            userService.registerTenantAndAdmin(request);
-            return ResponseEntity.ok(Map.of("message", "Tenant and Admin User created successfully"));
-        } catch (CustomException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        userService.registerTenantAndAdmin(request);
+        return ResponseEntity.ok(Map.of("message", "Tenant and Admin User created successfully"));
     }
 
     @PostMapping("/sign-in")

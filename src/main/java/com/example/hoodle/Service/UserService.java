@@ -12,6 +12,7 @@ import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Repository.RoleRepo;
 import com.example.hoodle.Repository.TenantRepo;
 import com.example.hoodle.Repository.UserRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,11 +38,13 @@ public class UserService {
     @Autowired
     private RoleRepo roleRepo;
 
+    @Transactional
     public void registerTenantAndAdmin(TenantRegistrationRequest request) {
             if(userRepo.existsByEmailId(request.getEmailId())) {
                 throw new CustomException(ErrorCode.User_Already_Exist, "User Already Existing");
             }
             if(tenantRepo.existsByName(request.getTenantName())) {
+                System.out.println("TENANT EXISTS");
                 throw new CustomException("400", "Tenant Already Exists!");
             }
 
