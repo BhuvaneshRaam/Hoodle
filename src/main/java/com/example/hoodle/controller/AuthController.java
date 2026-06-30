@@ -33,7 +33,7 @@ public class AuthController {
             String token = userService.loginUser(request);
             return ResponseEntity.ok(java.util.Map.of("token", token, "message", "Login Successful!"));
         } catch (CustomException e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getErrorMessage()));
         }
     }
 
