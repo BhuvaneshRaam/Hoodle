@@ -5,8 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name="tenant")
@@ -16,8 +19,10 @@ import java.util.Date;
 @NoArgsConstructor
 public class Tenant {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(Types.VARCHAR)
+    @Column(name="tenant_uuid")
+    private UUID tenantUuid;
 
     @Column(name = "tenant_name", nullable = false, unique = true)
     private String name;

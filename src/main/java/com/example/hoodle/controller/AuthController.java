@@ -23,12 +23,8 @@ public class AuthController {
     UserService userService;
     @PostMapping("/signup")
     public ResponseEntity<?> userRegisration(@RequestBody TenantRegistrationRequest request) throws CustomException{
-        try {
-            userService.registerTenantAndAdmin(request);
-            return ResponseEntity.ok(Map.of("message", "Tenant and Admin User created successfully"));
-        } catch (CustomException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        userService.registerTenantAndAdmin(request);
+        return ResponseEntity.ok(Map.of("message", "Tenant and Admin User created successfully"));
     }
 
     @PostMapping("/sign-in")
@@ -37,7 +33,7 @@ public class AuthController {
             String token = userService.loginUser(request);
             return ResponseEntity.ok(java.util.Map.of("token", token, "message", "Login Successful!"));
         } catch (CustomException e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getErrorMessage()));
         }
     }
 
