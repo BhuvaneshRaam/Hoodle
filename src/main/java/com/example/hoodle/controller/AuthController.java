@@ -7,6 +7,8 @@ import com.example.hoodle.Entity.User;
 import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
@@ -31,10 +33,45 @@ public class AuthController {
     public ResponseEntity<?> userLogin(@RequestBody LoginRequest request) {
         try {
             String token = userService.loginUser(request);
-            return ResponseEntity.ok(java.util.Map.of("token", token, "message", "Login Successful!"));
+            ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
+                    .httpOnly(true)       // Hides it from Angular/JavaScript (Prevents XSS)
+                    .secure(false)        // IMPORTANT: Change to true when you deploy with HTTPS!
+                    .path("/hoodle")            // Tells the browser to send it on every API call
+                    .maxAge(24 * 60 * 60) // 1 day expiration (matches your token expiration)
+                    .sameSite("Lax")      // Basic CSRF protection
+                    .build();
+
+            // 3. Send the cookie in the Header, NOT in the body
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(java.util.Map.of("message", "Login Successful!"));
         } catch (CustomException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getErrorMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        // Overwrite the existing cookie with an empty one that expires instantly
+        ResponseCookie cleanCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/hoodle")
+                .maxAge(0) // 0 maxAge tells the browser to delete the cookie immediately
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie sessionCookie = ResponseCookie.from("JSESSIONID", "")
+                .httpOnly(true)
+                .secure(false) // Change to true in production
+                .path("/hoodle")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, sessionCookie.toString())
+                .body(java.util.Map.of("message", "Logged out successfully"));
     }
 
     @GetMapping("/init")
