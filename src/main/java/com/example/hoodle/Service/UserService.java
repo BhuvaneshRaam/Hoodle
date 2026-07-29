@@ -4,6 +4,7 @@ import com.example.hoodle.Constants.ErrorCode;
 import com.example.hoodle.DTO.InitResponse;
 import com.example.hoodle.DTO.LoginRequest;
 import com.example.hoodle.DTO.TenantRegistrationRequest;
+import com.example.hoodle.DTO.UserRequest;
 import com.example.hoodle.Entity.Permission;
 import com.example.hoodle.Entity.Role;
 import com.example.hoodle.Entity.Tenant;
@@ -113,5 +114,75 @@ public class UserService {
             throw new CustomException("9006","Unexcpected eror occured while fetching users");
         }
         return users;
+    }
+
+    public List<User> getAllUsersForTenant(UUID adminUserId) {
+        User adminUser = userRepo.findById(adminUserId)
+                .orElseThrow(() -> new CustomException("404", "Admin not found"));
+
+        try {
+            return userRepo.findByTenant(adminUser.getTenant());
+        } catch (Exception e) {
+            throw new CustomException("9006","Unexpected error occurred while fetching users");
+        }
+    }
+
+    @Transactional
+    public void createTenantUser(UserRequest request, UUID adminUserId) {
+        User adminUser = userRepo.findById(adminUserId)
+                .orElseThrow(() -> new CustomException("401", "Unauthorized: Admin"));
+
+        if(userRepo.existsByEmailId(request.getEmailId())) {
+            throw new CustomException("400", "User email already exists!");
+        }
+
+        Set<Role> assignedRoles = new HashSet<>();
+        if (request.getRoleNames() != null) {
+            for (String roleName : request.getRoleNames()) {
+                Role role = roleRepo.findByName(roleName)
+                        .orElseThrow(() -> new CustomException("404", "Role not found: " + roleName));
+                assignedRoles.add(role);
+            }
+        }
+
+        String fallbackPassword = UUID.randomUUID().toString().substring(0, 8);
+
+        User newUser = new User();
+        newUser.setEmailId(request.getEmailId());
+        newUser.setUserName(request.getUserName());
+        newUser.setPassword(passwordEncoder.encode(fallbackPassword));
+        newUser.setRoles(assignedRoles);
+        newUser.setTenant(adminUser.getTenant());
+        newUser.setActive(true);
+
+        userRepo.save(newUser);
+    }
+
+    @Transactional
+    public void updateTenantUser(UUID targetUserId, UserRequest request, UUID adminUserId) {
+        User adminUser = userRepo.findById(adminUserId)
+                .orElseThrow(() -> new CustomException("401", "Unauthorized: Admin"));
+
+        User targetUser = userRepo.findById(targetUserId)
+                .orElseThrow(() -> new CustomException("404", "Target user not found"));
+
+        if (!targetUser.getTenant().getTenantUuid().equals(adminUser.getTenant().getTenantUuid())) {
+            throw new CustomException("403", "You do not have permission to modify this user.");
+        }
+
+        if (request.getUserName() != null) targetUser.setUserName(request.getUserName());
+        if (request.getIsActive() != null) targetUser.setActive(request.getIsActive());
+
+        if (request.getRoleNames() != null) {
+            Set<Role> newRoles = new HashSet<>();
+            for (String roleName : request.getRoleNames()) {
+                Role role = roleRepo.findByName(roleName)
+                        .orElseThrow(() -> new CustomException("404", "Role not found: " + roleName));
+                newRoles.add(role);
+            }
+            targetUser.setRoles(newRoles);
+        }
+
+        userRepo.save(targetUser);
     }
 }

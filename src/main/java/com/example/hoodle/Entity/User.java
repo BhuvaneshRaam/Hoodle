@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.NumericBooleanConverter;
 
 import java.sql.Types;
 import java.util.Set;
@@ -34,6 +36,11 @@ public class User {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="tenant_uuid", nullable = false)
     private Tenant tenant;
+
+    @Column(name = "is_active", nullable = false)
+    @ColumnDefault("1")
+    @Convert(converter = NumericBooleanConverter.class)
+    private boolean isActive = true;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="user_roles",
