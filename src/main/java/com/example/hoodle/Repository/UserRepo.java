@@ -1,9 +1,11 @@
 package com.example.hoodle.Repository;
 
+import com.example.hoodle.Entity.Tenant;
 import com.example.hoodle.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +16,7 @@ public interface UserRepo extends JpaRepository<User, UUID> {
     boolean existsByEmailId(String  emailId);
     Optional<User> findByUserName(String userName);
     Optional<User> findByEmailId(String emaildId);
+
+    List<User> findByTenant(Tenant tenant);
 
 }
