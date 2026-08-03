@@ -45,16 +45,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
 
-        if(token != null && jwtGenerator.validateToken(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if(token != null) {
 
-                String userIdString = jwtGenerator.extractUserId(token);
-                UUID userId = UUID.fromString(userIdString);
-
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userId,null,new ArrayList<>());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                if (jwtGenerator.validateToken(token)) {
+                    String userIdString = jwtGenerator.extractUserId(token);
+                    UUID userId = UUID.fromString(userIdString);
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
         filterChain.doFilter(request,response);
     }

@@ -22,7 +22,7 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllUsersForTenant(Authentication authentication) {
         try {
             UUID adminUserId = UUID.fromString(authentication.getName());
