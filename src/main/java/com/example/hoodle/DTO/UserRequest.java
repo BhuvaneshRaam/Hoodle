@@ -10,6 +10,6 @@ import java.util.Set;
 public class UserRequest {
     private String userName;
     private String emailId;
-    private Set<String> roleNames;
+    private Set<Long> roleIds;
     private Boolean isActive;
 }

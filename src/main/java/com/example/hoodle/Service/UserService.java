@@ -137,11 +137,11 @@ public class UserService {
         }
 
         Set<Role> assignedRoles = new HashSet<>();
-        if (request.getRoleNames() != null) {
-            for (String roleName : request.getRoleNames()) {
-                Role role = roleRepo.findByName(roleName)
-                        .orElseThrow(() -> new CustomException("404", "Role not found: " + roleName));
-                assignedRoles.add(role);
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
+            assignedRoles.addAll(roleRepo.findAllById(request.getRoleIds()));
+
+            if (assignedRoles.size() != request.getRoleIds().size()) {
+                throw new CustomException("404", "One or more roles were not found.");
             }
         }
 
@@ -166,21 +166,35 @@ public class UserService {
         User targetUser = userRepo.findById(targetUserId)
                 .orElseThrow(() -> new CustomException("404", "Target user not found"));
 
+        // 1. Verify Target User belongs to this workspace
         if (!targetUser.getTenant().getTenantUuid().equals(adminUser.getTenant().getTenantUuid())) {
             throw new CustomException("403", "You do not have permission to modify this user.");
         }
 
+        // 2. Standard field updates
         if (request.getUserName() != null) targetUser.setUserName(request.getUserName());
         if (request.getIsActive() != null) targetUser.setActive(request.getIsActive());
 
-        if (request.getRoleNames() != null) {
-            Set<Role> newRoles = new HashSet<>();
-            for (String roleName : request.getRoleNames()) {
-                Role role = roleRepo.findByName(roleName)
-                        .orElseThrow(() -> new CustomException("404", "Role not found: " + roleName));
-                newRoles.add(role);
+        // 3. Role Updates
+        if (request.getRoleIds() != null) {
+
+            if (request.getRoleIds().isEmpty()) {
+                targetUser.getRoles().clear();
+            } else {
+                List<Role> fetchedRoles = roleRepo.findAllById(request.getRoleIds());
+
+                if (fetchedRoles.size() != request.getRoleIds().size()) {
+                    throw new CustomException("404", "One or more roles were not found.");
+                }
+
+                for (Role role : fetchedRoles) {
+                    if (role.getTenant() != null && !role.getTenant().getTenantUuid().equals(adminUser.getTenant().getTenantUuid())) {
+                        throw new CustomException("403", "Security Violation: Cannot assign roles from another workspace.");
+                    }
+                }
+
+                targetUser.setRoles(new HashSet<>(fetchedRoles));
             }
-            targetUser.setRoles(newRoles);
         }
 
         userRepo.save(targetUser);

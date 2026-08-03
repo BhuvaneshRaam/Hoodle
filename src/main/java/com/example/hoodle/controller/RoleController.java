@@ -12,14 +12,14 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/roles")
+@RequestMapping("/api/v1/role")
 @PreAuthorize("hasAuthority('TENANT_ADMIN')")
 public class RoleController {
 
     @Autowired
     private RoleService roleService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllRolesForTenant(Authentication authentication) {
         UUID adminUserId = UUID.fromString(authentication.getName());
         return ResponseEntity.ok(roleService.getRolesForTenant(adminUserId));

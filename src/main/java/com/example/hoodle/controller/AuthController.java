@@ -36,7 +36,7 @@ public class AuthController {
             ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)       // Hides it from Angular/JavaScript (Prevents XSS)
                     .secure(false)        // IMPORTANT: Change to true when you deploy with HTTPS!
-                    .path("/hoodle")            // Tells the browser to send it on every API call
+                    .path("/")            // Tells the browser to send it on every API call
                     .maxAge(24 * 60 * 60) // 1 day expiration (matches your token expiration)
                     .sameSite("Lax")      // Basic CSRF protection
                     .build();
@@ -56,7 +56,7 @@ public class AuthController {
         ResponseCookie cleanCookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
                 .secure(false)
-                .path("/hoodle")
+                .path("/")
                 .maxAge(0) // 0 maxAge tells the browser to delete the cookie immediately
                 .sameSite("Lax")
                 .build();
