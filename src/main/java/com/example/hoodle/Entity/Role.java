@@ -30,7 +30,7 @@ public class Role {
     @JoinColumn(name = "tenant_uuid")
     private Tenant tenant;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name ="role_permissions",
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id"))
