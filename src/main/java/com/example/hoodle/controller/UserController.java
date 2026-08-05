@@ -1,10 +1,12 @@
 package com.example.hoodle.controller;
 
+import com.example.hoodle.DTO.UserDto;
 import com.example.hoodle.DTO.UserRequest;
 import com.example.hoodle.Entity.User;
 import com.example.hoodle.Exception.CustomException;
 import com.example.hoodle.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,10 +25,14 @@ public class UserController {
     UserService userService;
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllUsersForTenant(Authentication authentication) {
+    public ResponseEntity<?> getAllUsersForTenant(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search,
+            Authentication authentication) {
         try {
             UUID adminUserId = UUID.fromString(authentication.getName());
-            List<User> users = userService.getAllUsersForTenant(adminUserId);
+            Page<UserDto> users = userService.getAllUsersForTenant(adminUserId, search, page, size);
             return ResponseEntity.ok(users);
         } catch (CustomException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

@@ -42,7 +42,7 @@ public class User {
     @Convert(converter = NumericBooleanConverter.class)
     private boolean isActive = true;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name="user_roles",
             joinColumns = @JoinColumn(name="user_uuid"),
             inverseJoinColumns = @JoinColumn(name="role_id")

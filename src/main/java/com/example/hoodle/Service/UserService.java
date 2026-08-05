@@ -1,10 +1,7 @@
 package com.example.hoodle.Service;
 
 import com.example.hoodle.Constants.ErrorCode;
-import com.example.hoodle.DTO.InitResponse;
-import com.example.hoodle.DTO.LoginRequest;
-import com.example.hoodle.DTO.TenantRegistrationRequest;
-import com.example.hoodle.DTO.UserRequest;
+import com.example.hoodle.DTO.*;
 import com.example.hoodle.Entity.Permission;
 import com.example.hoodle.Entity.Role;
 import com.example.hoodle.Entity.Tenant;
@@ -15,11 +12,16 @@ import com.example.hoodle.Repository.TenantRepo;
 import com.example.hoodle.Repository.UserRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -116,15 +118,45 @@ public class UserService {
         return users;
     }
 
-    public List<User> getAllUsersForTenant(UUID adminUserId) {
+    public Page<UserDto> getAllUsersForTenant(UUID adminUserId, String search, int page, int size) {
         User adminUser = userRepo.findById(adminUserId)
                 .orElseThrow(() -> new CustomException("404", "Admin not found"));
+        String safeSearch = (search == null) ? "" : search;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("userName").ascending());
+        Page<User> usersPage = userRepo.searchUsersByTenant(adminUser.getTenant(), safeSearch, pageable);
+        return usersPage.map(this::mapToUserResponseDto);
+    }
 
-        try {
-            return userRepo.findByTenant(adminUser.getTenant());
-        } catch (Exception e) {
-            throw new CustomException("9006","Unexpected error occurred while fetching users");
-        }
+    private UserDto mapToUserResponseDto(User user) {
+        Set<RoleDto> roleDtos = user.getRoles() == null ? new HashSet<>() :
+                user.getRoles().stream()
+                        .map(role -> {
+
+                            Set<PermissionDto> permDtos = role.getPermissions() == null ? new HashSet<>() :
+                                    role.getPermissions().stream()
+                                            .map(p -> PermissionDto.builder()
+                                                    .id(p.getId())
+                                                    .module(p.getModule().getName())
+                                                    .privilege(p.getPrivilege().getName())
+                                                    .build())
+                                            .collect(Collectors.toSet());
+
+                            return RoleDto.builder()
+                                    .id(role.getId())
+                                    .roleName(role.getName())
+                                    .isActive(role.isActive())
+                                    .permissions(permDtos)
+                                    .build();
+                        })
+                        .collect(Collectors.toSet());
+
+        return UserDto.builder()
+                .userUuid(user.getUserUuid())
+                .userName(user.getUserName())
+                .emailId(user.getEmailId())
+                .isActive(user.isActive())
+                .roles(roleDtos)
+                .build();
     }
 
     @Transactional
