@@ -21,8 +21,11 @@ public interface UserRepo extends JpaRepository<User, UUID> {
     boolean existsByEmailId(String  emailId);
     Optional<User> findByUserName(String userName);
 
-    @EntityGraph(attributePaths = {"roles"})
-    Optional<User> findByEmailId(String emaildId);
+    @EntityGraph(attributePaths = {"roles",
+            "roles.permissions",
+            "roles.permissions.module",
+            "roles.permissions.privilege"})
+    Optional<User> findByEmailId(String emailId);
 
     List<User> findByTenant(Tenant tenant);
 

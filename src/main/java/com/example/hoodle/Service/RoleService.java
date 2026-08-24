@@ -38,7 +38,7 @@ public class RoleService {
         User adminUser = userRepo.findById(adminUserId)
                 .orElseThrow(() -> new CustomException("401", "Admin not found"));
 
-        List<Role> roles = roleRepo.findByTenantOrTenantIsNull(adminUser.getTenant());
+        List<Role> roles = roleRepo.findByTenantOrIsSystemRoleTrue(adminUser.getTenant());
 
         return roles.stream()
                 .map(this::mapToRoleDto)

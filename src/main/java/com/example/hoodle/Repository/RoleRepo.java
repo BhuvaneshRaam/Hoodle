@@ -14,11 +14,15 @@ import java.util.Optional;
 public interface RoleRepo extends JpaRepository<Role, Long> {
     Optional<Role> findByName(String name);
 
+    Optional<Role> findByNameAndIsSystemRoleTrue(String name);
+
     boolean existsByNameAndTenant(String name, Tenant tenant);
 
     List<Role> findByTenantOrTenantIsNull(Tenant tenant);
 
-    @Query("SELECT r FROM Role r WHERE (r.tenant = :tenant OR r.tenant IS NULL) AND " +
+    List<Role> findByTenantOrIsSystemRoleTrue(Tenant tenant);
+
+    @Query("SELECT r FROM Role r WHERE (r.tenant = :tenant OR r.isSystemRole = true) AND " +
             "LOWER(r.name) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Role> searchRolesByTenant(
             @Param("tenant") Tenant tenant,

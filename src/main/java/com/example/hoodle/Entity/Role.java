@@ -23,12 +23,17 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, name = "role_name")
+    @Column(nullable = false, name = "role_name")
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_uuid")
     private Tenant tenant;
+
+    @Column(name = "is_system_role", nullable = false)
+    @ColumnDefault("0")
+    @Convert(converter = NumericBooleanConverter.class)
+    private boolean isSystemRole = false;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name ="role_permissions",

@@ -42,11 +42,14 @@ public class JwtGenerator {
         return response;
     }
 
-    public String generateJwtToken(User user, List<String> roles) {
+
+
+    public String generateJwtToken(User user, List<String> roles, List<String> permissions) {
         return  Jwts.builder().subject(user.getUserUuid().toString())
                 .claim("userEmail", user.getEmailId())
                 .claim("tenantUuid", user.getTenant().getTenantUuid())
                 .claim("roles", roles)
+                .claim("permissions", permissions)
                 .issuer(issuer)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+ expirationMs))

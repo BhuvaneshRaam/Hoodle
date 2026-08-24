@@ -60,7 +60,7 @@ public class UserController {
             userService.updateTenantUser(userId, request, adminUserId);
             return ResponseEntity.ok(Map.of("message", "User updated successfully."));
         } catch (CustomException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getErrorMessage()));
         }
     }
 }

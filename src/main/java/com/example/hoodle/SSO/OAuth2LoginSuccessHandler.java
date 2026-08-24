@@ -1,5 +1,7 @@
 package com.example.hoodle.SSO;
 
+import com.example.hoodle.Entity.Permission;
+import com.example.hoodle.Entity.Role;
 import com.example.hoodle.Entity.User;
 import com.example.hoodle.Repository.UserRepo;
 import com.example.hoodle.Service.JwtGenerator;
@@ -18,6 +20,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +56,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .map(role -> role.getName())
                 .toList();
 
-        String token = jwtGenerator.generateJwtToken(user, roleNames);
+        List<String> permissions = new ArrayList<>();
+        for (Role role : user.getRoles()) {
+            for (Permission perm : role.getPermissions()) {
+                permissions.add(perm.getModule().getName() + "." + perm.getPrivilege().getName());
+            }
+        }
+
+        String token = jwtGenerator.generateJwtToken(user, roleNames, permissions);
 
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
                 .httpOnly(true)
