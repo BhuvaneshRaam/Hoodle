@@ -55,8 +55,8 @@ public class UserService {
             newTenant.setName(request.getTenantName());
             tenantRepo.save(newTenant);
 
-            Role tenantAdmin = roleRepo.findByName("TENANT_ADMIN")
-                    .orElseThrow(() -> new CustomException("500", "Critical Error: TENANT_ADMIN role not found in database"));
+            Role tenantAdmin = roleRepo.findByNameAndIsSystemRoleTrue("TENANT_ADMIN")
+                    .orElseThrow(() -> new CustomException("500", "Critical Error: Global TENANT_ADMIN role not found in database"));
 
             Set<Role> userRoles = new HashSet<>();
             userRoles.add(tenantAdmin);
@@ -83,7 +83,14 @@ public class UserService {
             java.util.List<String> roleNames = user.getRoles().stream()
                 .map(role -> role.getName())
                 .toList();
-            return jwtGenerator.generateJwtToken(user, roleNames);
+
+            List<String> permissions = new ArrayList<>();
+            for (Role role : user.getRoles()) {
+                for (Permission perm : role.getPermissions()) {
+                    permissions.add(perm.getModule().getName() + "." + perm.getPrivilege().getName());
+                }
+            }
+            return jwtGenerator.generateJwtToken(user, roleNames, permissions);
     }
 
     public InitResponse getInitData(UUID userId) {
