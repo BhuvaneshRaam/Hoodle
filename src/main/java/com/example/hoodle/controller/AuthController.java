@@ -35,10 +35,10 @@ public class AuthController {
             String token = userService.loginUser(request);
             ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)       // Hides it from Angular/JavaScript (Prevents XSS)
-                    .secure(false)        // IMPORTANT: Change to true when you deploy with HTTPS!
+                    .secure(true)        // IMPORTANT: Change to true when you deploy with HTTPS!
                     .path("/")            // Tells the browser to send it on every API call
                     .maxAge(24 * 60 * 60) // 1 day expiration (matches your token expiration)
-                    .sameSite("Lax")      // Basic CSRF protection
+                    .sameSite("None")      // Basic CSRF protection
                     .build();
 
             // 3. Send the cookie in the Header, NOT in the body
