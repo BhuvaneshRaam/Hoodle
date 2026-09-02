@@ -55,15 +55,15 @@ public class AuthController {
         // Overwrite the existing cookie with an empty one that expires instantly
         ResponseCookie cleanCookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(0) // 0 maxAge tells the browser to delete the cookie immediately
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie sessionCookie = ResponseCookie.from("JSESSIONID", "")
                 .httpOnly(true)
-                .secure(false) // Change to true in production
+                .secure(true) // Change to true in production
                 .path("/hoodle")
                 .maxAge(0)
                 .build();
