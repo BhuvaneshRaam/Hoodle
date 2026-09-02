@@ -68,6 +68,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
                 .httpOnly(true)
                 .secure(true) // IMPORTANT: Change to true when deploying with HTTPS!
+                .domain(".onrender.com")
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .sameSite("None")
