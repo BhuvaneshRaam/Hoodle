@@ -52,10 +52,11 @@ public class OrbitOrderProxyController {
             return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
-        } catch (Exception e) {
-            System.out.println(">>> PROXY EXCEPTION: " + e.getMessage() + " <<<");
+        } catch (Throwable t) {
+            // 'Throwable' catches Exceptions AND fatal system Errors like OutOfMemory!
+            System.out.println(">>> FATAL PROXY CRASH: " + t.toString() + " <<<");
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body("Failed to reach Orbit Order: " + e.getMessage());
+                    .body("Hoodle crashed while forwarding: " + t.getMessage());
         }
     }
 }
