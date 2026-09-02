@@ -69,6 +69,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .httpOnly(true)
                 .secure(true) // IMPORTANT: Change to true when deploying with HTTPS!
                 .path("/")
+                .domain(".onrender.com")
                 .maxAge(24 * 60 * 60)
                 .sameSite("None")
                 .build();
