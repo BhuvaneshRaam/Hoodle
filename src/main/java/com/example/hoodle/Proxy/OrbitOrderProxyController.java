@@ -13,9 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 public class OrbitOrderProxyController {
 
-    @Bean
-    public RestTemplate restTemplate() { return new RestTemplate(); }
-
     @Autowired
     private RestTemplate restTemplate;
 
