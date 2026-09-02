@@ -35,10 +35,10 @@ public class AuthController {
             String token = userService.loginUser(request);
             ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)       // Hides it from Angular/JavaScript (Prevents XSS)
-                    .secure(false)        // IMPORTANT: Change to true when you deploy with HTTPS!
+                    .secure(true)        // IMPORTANT: Change to true when you deploy with HTTPS!
                     .path("/")            // Tells the browser to send it on every API call
                     .maxAge(24 * 60 * 60) // 1 day expiration (matches your token expiration)
-                    .sameSite("Lax")      // Basic CSRF protection
+                    .sameSite("None")      // Basic CSRF protection
                     .build();
 
             // 3. Send the cookie in the Header, NOT in the body
@@ -55,15 +55,15 @@ public class AuthController {
         // Overwrite the existing cookie with an empty one that expires instantly
         ResponseCookie cleanCookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(0) // 0 maxAge tells the browser to delete the cookie immediately
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie sessionCookie = ResponseCookie.from("JSESSIONID", "")
                 .httpOnly(true)
-                .secure(false) // Change to true in production
+                .secure(true) // Change to true in production
                 .path("/hoodle")
                 .maxAge(0)
                 .build();
