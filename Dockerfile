@@ -14,4 +14,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Run the app with the anti-crash memory limits built-in!
-ENTRYPOINT ["java", "-Xmx256m", "-Xms256m", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx256m", "-XX:MaxMetaspaceSize=128m", "-jar", "app.jar"]
