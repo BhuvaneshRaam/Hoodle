@@ -33,15 +33,21 @@ public class OrbitOrderProxyController {
         headers.set("Content-Type", request.getContentType() != null ? request.getContentType() : "application/json");
 
         try {
-            // Try to forward the request
-            return restTemplate.exchange(targetUrl, HttpMethod.valueOf(request.getMethod()), new HttpEntity<>(body, headers), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    targetUrl,
+                    HttpMethod.valueOf(request.getMethod()),
+                    new HttpEntity<>(body, headers),
+                    String.class
+            );
+            System.out.println(">>> PROXY SUCCESS: " + response.getStatusCode() + " <<<");
+            return response;
         } catch (HttpStatusCodeException e) {
-            // If Orbit Order returns 401, 403, 404, etc., pass it safely back to Angular!
+            System.out.println(">>> PROXY HTTP ERROR: " + e.getStatusCode() + " - " + e.getResponseBodyAsString() + " <<<");
             return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
         } catch (Exception e) {
-            // If Orbit Order is asleep or completely down
+            System.out.println(">>> PROXY EXCEPTION: " + e.getMessage() + " <<<");
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body("Failed to reach Orbit Order: " + e.getMessage());
         }
