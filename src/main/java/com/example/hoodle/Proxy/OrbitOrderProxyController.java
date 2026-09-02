@@ -14,34 +14,46 @@ public class OrbitOrderProxyController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @RequestMapping(value = "/proxy/orbitorder/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
-    public ResponseEntity<String> proxyRequests(HttpServletRequest request,
-                                                @CookieValue(value = "jwt", required = false) String jwtToken,
-                                                @RequestBody(required = false) String body) {
+    // 1. SANITY CHECK ENDPOINT - Proves the controller is reachable
+    @GetMapping("/proxy/ping")
+    public String pingTest() {
+        System.out.println(">>> PROXY PING REACHED <<<");
+        return "Proxy is officially awake and reachable!";
+    }
+
+    // 2. PURE GET PROXY - Stripped down to avoid Tomcat body errors
+    @GetMapping("/proxy/orbitorder/**")
+    public ResponseEntity<String> proxyGetRequests(HttpServletRequest request,
+                                                   @CookieValue(value = "jwt", required = false) String jwtToken) {
+
+        System.out.println(">>> PROXY INITIATED FOR GET <<<");
 
         String requestURI = request.getRequestURI();
         String apiPath = requestURI.substring(requestURI.indexOf("/proxy/orbitorder") + "/proxy/orbitorder".length());
 
-        // IMPORTANT: Verify this matches Orbit Order's exact live URL and context path!
         String targetUrl = "https://orbitorder.onrender.com/orbitorder" + apiPath;
         if (request.getQueryString() != null) {
             targetUrl += "?" + request.getQueryString();
         }
 
+        System.out.println("Forwarding To: " + targetUrl);
+
         HttpHeaders headers = new HttpHeaders();
-        if (jwtToken != null) headers.set("Authorization", "Bearer " + jwtToken);
-        headers.set("Content-Type", request.getContentType() != null ? request.getContentType() : "application/json");
+        if (jwtToken != null) {
+            headers.set("Authorization", "Bearer " + jwtToken);
+        }
+        headers.set("Content-Type", "application/json");
 
         try {
-            // Try to forward the request
-            return restTemplate.exchange(targetUrl, HttpMethod.valueOf(request.getMethod()), new HttpEntity<>(body, headers), String.class);
+            // Forwarding as a pure GET request with NO body
+            return restTemplate.exchange(targetUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
         } catch (HttpStatusCodeException e) {
-            // If Orbit Order returns 401, 403, 404, etc., pass it safely back to Angular!
+            System.out.println(">>> ORBIT ORDER RETURNED ERROR: " + e.getStatusCode() + " <<<");
             return ResponseEntity.status(e.getStatusCode())
                     .headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
         } catch (Exception e) {
-            // If Orbit Order is asleep or completely down
+            System.out.println(">>> PROXY EXCEPTION: " + e.getMessage() + " <<<");
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body("Failed to reach Orbit Order: " + e.getMessage());
         }
