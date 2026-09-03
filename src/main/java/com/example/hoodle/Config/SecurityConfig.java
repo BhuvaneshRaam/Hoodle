@@ -62,8 +62,8 @@ public class SecurityConfig {
         // Allow your exact Angular frontend URL
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "https://*.vercel.app",
-                "https://*.onrender.com"));
+                "https://hoodle-hub.vercel.app",
+                "https://hoodle.onrender.com"));
 
         // Allow all standard HTTP methods, including OPTIONS (critical for preflight!)
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
