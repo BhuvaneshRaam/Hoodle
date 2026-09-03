@@ -46,7 +46,10 @@ public class OrbitOrderProxyController {
 
         try {
             // Forwarding as a pure GET request with NO body
-            return restTemplate.exchange(targetUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(targetUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            System.out.println(">>> RECEIVED SUCCESS FROM ORBIT ORDER: " + response.getStatusCode() + " <<<");
+            // 2. CRITICAL FIX: Return ONLY the status code and body (DO NOT pass raw response headers!)
+            return ResponseEntity.status(response.getStatusCode()).contentType(MediaType.APPLICATION_JSON).body(response.getBody());
         } catch (HttpStatusCodeException e) {
             System.out.println(">>> ORBIT ORDER RETURNED ERROR: " + e.getStatusCode() + " <<<");
             return ResponseEntity.status(e.getStatusCode())
