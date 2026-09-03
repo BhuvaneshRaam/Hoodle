@@ -53,7 +53,7 @@ public class OrbitOrderProxyController {
         } catch (HttpStatusCodeException e) {
             System.out.println(">>> ORBIT ORDER RETURNED ERROR: " + e.getStatusCode() + " <<<");
             return ResponseEntity.status(e.getStatusCode())
-                    .headers(e.getResponseHeaders())
+                    .contentType(MediaType.APPLICATION_JSON) // Just set the content type, no raw headers
                     .body(e.getResponseBodyAsString());
         } catch (Throwable t) {
             // 'Throwable' catches Exceptions AND fatal system Errors like OutOfMemory!
